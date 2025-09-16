@@ -1,0 +1,72 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Build the code from scratch.
+      id: build-the-code-from-scratch
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Build the code from scratch.
+        setup-command: ''
+        command: gradle clean build
+        timeout: 1
+        max-score: 1
+    - name: Run Demo Tests
+      id: run-demo-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run Demo Tests
+        setup-command: sed -i -e "s/includeGroups.*/includeGroups 'demo'/g" build.gradle
+        command: gradle test
+        timeout: 1
+        max-score: 2
+    - name: Run student tests
+      id: run-student-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run student tests
+        setup-command: sed -i -e "s/includeGroups.*/includeGroups 'student'/g" build.gradle
+        command: gradle test
+        timeout: 1
+        max-score: 4
+    - name: Obtain professor tests
+      id: obtain-professor-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Obtain professor tests
+        setup-command: wget -q -O ProfessorTests.zip -L https://msoe.box.com/shared/static/k4t2ihafp670syaqnxoyprf0cxcxpmni.zip;
+          unzip ProfessorTests.zip
+        command: touch run.txt
+        timeout: 1
+        max-score: 0
+    - name: Run Professor Tests
+      id: run-professor-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run Professor Tests
+        setup-command: 'sed -i -e "s/includeGroups.*/includeGroups ''professor''/g"
+          build.gradle '
+        command: echo gradle test
+        timeout: 1
+        max-score: 8
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        BUILD-THE-CODE-FROM-SCRATCH_RESULTS: "${{steps.build-the-code-from-scratch.outputs.result}}"
+        RUN-DEMO-TESTS_RESULTS: "${{steps.run-demo-tests.outputs.result}}"
+        RUN-STUDENT-TESTS_RESULTS: "${{steps.run-student-tests.outputs.result}}"
+        OBTAIN-PROFESSOR-TESTS_RESULTS: "${{steps.obtain-professor-tests.outputs.result}}"
+        RUN-PROFESSOR-TESTS_RESULTS: "${{steps.run-professor-tests.outputs.result}}"
+      with:
+        runners: build-the-code-from-scratch,run-demo-tests,run-student-tests,obtain-professor-tests,run-professor-tests

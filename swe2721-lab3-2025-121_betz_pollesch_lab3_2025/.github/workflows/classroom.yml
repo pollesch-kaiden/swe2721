@@ -1,0 +1,62 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Att Tests by default
+      id: att-tests-by-default
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Att Tests by default
+        setup-command: ''
+        command: gradle test
+        timeout: 1
+        max-score: 1
+    - name: Test A Runs
+      id: test-a-runs
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test A Runs
+        setup-command: sed -i -e "s/includeGroups.*/includeGroups 'testa'/g" build.gradle
+        command: gradle test
+        timeout: 1
+        max-score: 2
+    - name: Test B Runs
+      id: test-b-runs
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Test B Runs
+        setup-command: sed -i -e "s/includeGroups.*/includeGroups 'testb'/g" build.gradle
+        command: gradle test
+        timeout: 1
+        max-score: 4
+    - name: Obtain and Run Professor Tests
+      id: obtain-and-run-professor-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Obtain and Run Professor Tests
+        setup-command: 'wget -q -O professorTests.zip -L https://msoe.box.com/shared/static/5xge2nc5px412876br5cp3hstvxdgujd.zip;
+          unzip professorTests.zip; sed -i -e "s/includeGroups.*/includeGroups ''profa'',
+          ''profb''/g" build.gradle '
+        command: gradle test
+        timeout: 1
+        max-score: 8
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        ATT-TESTS-BY-DEFAULT_RESULTS: "${{steps.att-tests-by-default.outputs.result}}"
+        TEST-A-RUNS_RESULTS: "${{steps.test-a-runs.outputs.result}}"
+        TEST-B-RUNS_RESULTS: "${{steps.test-b-runs.outputs.result}}"
+        OBTAIN-AND-RUN-PROFESSOR-TESTS_RESULTS: "${{steps.obtain-and-run-professor-tests.outputs.result}}"
+      with:
+        runners: att-tests-by-default,test-a-runs,test-b-runs,obtain-and-run-professor-tests

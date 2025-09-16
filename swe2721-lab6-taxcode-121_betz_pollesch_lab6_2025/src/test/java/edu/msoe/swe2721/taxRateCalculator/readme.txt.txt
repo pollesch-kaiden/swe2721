@@ -1,0 +1,1 @@
+Inside of this folder is where the tester should place their test code and their Java files.

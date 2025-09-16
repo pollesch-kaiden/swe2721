@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"edu.msoe.swe2721.lab7","l":"MainApplication"},{"p":"edu.msoe.swe2721.lab7","l":"SampleTestForStudents"},{"p":"edu.msoe.swe2721.lab7","l":"WCException"},{"p":"edu.msoe.swe2721.lab7","l":"WordChanger"}];updateSearchResults();

@@ -1,0 +1,50 @@
+plugins {
+    id 'application'
+}
+apply plugin : "java"
+
+version '1.0-SNAPSHOT'
+
+// This line will set the compiler version.  If a compatible compiler is not found, gradle will automatically download an appropriate and compatible version.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+// This line defines the main for the project.  This will be used to execute the project.
+application {
+    mainClass = 'msoe.edu.MainProgram' 
+}
+
+// This will set the repository for open source libraries.  mavenCentral is a common repository for Java code.
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Use TestNG framework, also requires calling test.useTestNG() below
+    testImplementation 'org.testng:testng:7.10.2'
+}
+
+tasks.named('test') {
+    // Use TestNG for unit tests.
+    useTestNG() {
+        includeGroups 'student', 'demo', 'all'
+        excludeGroups
+        useDefaultListeners = true
+        outputDirectory = file("$projectDir/TestNG_Reports")
+    }
+    reports.html.setDestination(file("$projectDir/GradleReports"))
+}
+
+
+
+
+
+
+
+
+
+
+

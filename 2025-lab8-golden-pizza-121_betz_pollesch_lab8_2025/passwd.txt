@@ -1,0 +1,2 @@
+Kitchen Staff, , ,kitchen@goldenpizza.com,kitchen@goldenpizza.com,LetMeIn,kitchen
+Sally Software,1/1/1995,(123)456-7890,ssoftware@msoe.edu,ssoftware@msoe.edu,LetMeOut,customer

@@ -1,0 +1,104 @@
+plugins {
+    id 'application'
+    id 'info.solidsoft.pitest' version '1.15.0'
+    id 'jacoco'
+}
+
+java {
+    //sourceCompatibility = "1.21"
+    //targetCompatibility = "1.21"
+}
+
+version = '1.0-SNAPSHOT'
+
+pitest {
+    pitestVersion = '1.18.1'
+    targetClasses = ['transcriptAnalyzer.Term', 'transcriptAnalyzer.Transcript', 'transcriptAnalyzer.CompletedCourse', 'transcriptAnalyzer.AcademicQuarter', 'transcriptAnalyzer.LetterGradeEnum']  // by default "${project.group}.*
+    targetTests = ['transcriptAnalyzer.TestTerm', 'transcriptAnalyzer.TestTranscript', 'transcriptAnalyzer.TestCompletedCourse', 'transcriptAnalyzer.LetterGradeEnumTest', 'transcriptAnalyzer.TestAcademicQuarter']
+    timestampedReports = true
+    outputFormats = ['XML', 'HTML']
+    threads = 1
+    mutators = ['DEFAULTS', 'CONSTRUCTOR_CALLS', 'REMOVE_INCREMENTS', 'STRONGER' ]
+}
+
+
+
+// This will set the repository for open source libraries.  mavenCentral is a common repository for Java code.
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Use TestNG framework, also requires calling test.useTestNG() below
+    testImplementation 'org.mockito:mockito-core:5.16.1'
+    implementation  group: 'com.googlecode.json-simple', name: 'json-simple', version: '1.1.1'
+    implementation  group: 'org.testng', name: 'testng', version: '7.10.2'
+    implementation  group: 'org.pitest', name: 'pitest-testng-plugin', version: '1.0.0'
+    implementation  group: 'org.slf4j', name: 'slf4j-simple', version: '1.7.21'
+}
+
+test {
+    useTestNG()
+    maxHeapSize = '1G'
+    testLogging {
+        events "SKIPPED", "FAILED"
+    }
+    afterSuite { desc, result ->
+	if (!desc.parent) {
+		if (result.testCount == 0) {
+			throw new IllegalStateException("No tests were found. Failing the build")
+		}
+	}
+    }
+    maxHeapSize = '1G'
+    afterSuite { desc, result ->
+        if (!desc.parent) { // will match the outermost suite
+            def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+            def startItem = '|  ', endItem = '  |'
+            def repeatLength = startItem.length() + output.length() + endItem.length()
+            println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+        }
+    }
+    maxHeapSize = '1G'
+    testLogging {
+        exceptionFormat = 'full'
+    }
+    finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+    reportsDirectory  = layout.buildDirectory.dir('customJacocoReportDir')
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
+application {
+    mainClass = 'transcriptAnalyzer.Main'
+}
+
+allprojects {
+    tasks.withType(Test) {
+        testLogging {
+            exceptionFormat ="full"
+            showCauses =true
+            showExceptions =true
+            showStackTraces =true
+            showStandardStreams =true
+            events = ["skipped", "failed", "standardOut", "standardError"]
+        }
+    }
+}
+
+jar {
+    manifest {
+
+    }
+}

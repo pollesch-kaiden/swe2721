@@ -1,0 +1,139 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Student Gradle Build of Code
+      id: student-gradle-build-of-code
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Student Gradle Build of Code
+        setup-command: ''
+        command: gradle build
+        timeout: 2
+        max-score: 1
+    - name: Run Student Tests
+      id: run-student-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run Student Tests
+        setup-command: ''
+        command: gradle test; gradle build jacocoTestReport
+        timeout: 2
+        max-score: 2
+    - name: Generate Student Test Coverage Reports
+      id: generate-student-test-coverage-reports
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Generate Student Test Coverage Reports
+        setup-command: sudo apt-get -y install w3m
+        command: cd build; cd jacocoHtml; w3m -dump index.html; cd edu.msoe.swe2721.lab7;
+          w3m -dump WordChanger.html;cd ..;
+        timeout: 2
+        max-score: 0
+    - name: Run Tests only on AddSynonymn
+      id: run-tests-only-on-addsynonymn
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run Tests only on AddSynonymn
+        setup-command: 'rm -rf build; sed -i -e "s/includeGroups.*/includeGroups ''professor'', ''addSynonymPair''/g"
+          build.gradle; cat build.gradle;'
+        command: gradle test
+        timeout: 2
+        max-score: 4
+    - name: Generate Report for AddSynonymn
+      id: generate-report-for-addsynonymn
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Generate Report for AddSynonymn
+        setup-command: ''
+        command: gradle build jacocoTestReport;cd build; cd jacocoHtml; w3m -dump
+          index.html; cd edu.msoe.swe2721.lab7; w3m -dump WordChanger.html;
+        timeout: 2
+        max-score: 0
+    - name: Run tests on only findSynonymn
+      id: run-tests-on-only-findsynonymn
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run tests on only findSynonymn
+        setup-command: 'rm -rf build; sed -i -e "s/includeGroups.*/includeGroups ''findSynonym''/g"
+          build.gradle; '
+        command: gradle test
+        timeout: 10
+        max-score: 0
+    - name: Run Report on findSynonymn
+      id: run-report-on-findsynonymn
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run Report on findSynonymn
+        setup-command: ''
+        command: gradle build jacocoTestReport;cd build; cd jacocoHtml; w3m -dump
+          index.html; cd edu.msoe.swe2721.lab7; w3m -dump WordChanger.html;
+        timeout: 2
+        max-score: 0
+    - name: Run tests only on toLowerCase
+      id: run-tests-only-on-tolowercase
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run tests only on toLowerCase
+        setup-command: 'rm -rf build; sed -i -e "s/includeGroups.*/includeGroups ''toLowerCase''/g"
+          build.gradle; '
+        command: gradle test
+        timeout: 2
+        max-score: 16
+    - name: Run Report on toLowerCase
+      id: run-report-on-tolowercase
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run Report on toLowerCase
+        setup-command: ''
+        command: gradle build jacocoTestReport;cd build; cd jacocoHtml; w3m -dump
+          index.html; cd edu.msoe.swe2721.lab7; w3m -dump WordChanger.html;
+        timeout: 2
+        max-score: 0
+    - name: Run tests only on determineIfStringIsSpaceFree
+      id: run-tests-only-on-determineifstringisspacefree
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run tests only on determineIfStringIsSpaceFree
+        setup-command: rm -rf build; sed -i -e "s/includeGroups.*/includeGroups 'determineIfStringisSpaceFree'/g"
+          build.gradle
+        command: gradle test
+        timeout: 2
+        max-score: 32
+    - name: Run Report on determineIfStringIsSpaceFree
+      id: run-report-on-determineifstringisspacefree
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run Report on determineIfStringIsSpaceFree
+        setup-command: ''
+        command: gradle build jacocoTestReport;cd build; cd jacocoHtml; w3m -dump
+          index.html; cd edu.msoe.swe2721.lab7; w3m -dump WordChanger.html;
+        timeout: 2
+        max-score: 0
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        STUDENT-GRADLE-BUILD-OF-CODE_RESULTS: "${{steps.student-gradle-build-of-code.outputs.result}}"
+        RUN-STUDENT-TESTS_RESULTS: "${{steps.run-student-tests.outputs.result}}"
+        GENERATE-STUDENT-TEST-COVERAGE-REPORTS_RESULTS: "${{steps.generate-student-test-coverage-reports.outputs.result}}"
+        RUN-TESTS-ONLY-ON-ADDSYNONYMN_RESULTS: "${{steps.run-tests-only-on-addsynonymn.outputs.result}}"
+        GENERATE-REPORT-FOR-ADDSYNONYMN_RESULTS: "${{steps.generate-report-for-addsynonymn.outputs.result}}"
+        RUN-TESTS-ON-ONLY-FINDSYNONYMN_RESULTS: "${{steps.run-tests-on-only-findsynonymn.outputs.result}}"
+        RUN-REPORT-ON-FINDSYNONYMN_RESULTS: "${{steps.run-report-on-findsynonymn.outputs.result}}"
+        RUN-TESTS-ONLY-ON-TOLOWERCASE_RESULTS: "${{steps.run-tests-only-on-tolowercase.outputs.result}}"
+        RUN-REPORT-ON-TOLOWERCASE_RESULTS: "${{steps.run-report-on-tolowercase.outputs.result}}"
+        RUN-TESTS-ONLY-ON-DETERMINEIFSTRINGISSPACEFREE_RESULTS: "${{steps.run-tests-only-on-determineifstringisspacefree.outputs.result}}"
+        RUN-REPORT-ON-DETERMINEIFSTRINGISSPACEFREE_RESULTS: "${{steps.run-report-on-determineifstringisspacefree.outputs.result}}"
+      with:
+        runners: student-gradle-build-of-code,run-student-tests,generate-student-test-coverage-reports,run-tests-only-on-addsynonymn,generate-report-for-addsynonymn,run-tests-on-only-findsynonymn,run-report-on-findsynonymn,run-tests-only-on-tolowercase,run-report-on-tolowercase,run-tests-only-on-determineifstringisspacefree,run-report-on-determineifstringisspacefree

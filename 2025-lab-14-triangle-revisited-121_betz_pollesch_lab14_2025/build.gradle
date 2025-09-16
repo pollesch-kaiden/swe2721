@@ -1,0 +1,140 @@
+plugins {
+    id 'application'
+    id 'jacoco'
+}
+apply plugin : "java"
+
+version '1.0-SNAPSHOT'
+
+// This line will set the compiler version.  If a compatible compiler is not found, gradle will automatically download an appropriate and compatible version.
+java {
+    sourceCompatibility = JavaVersion.VERSION_11
+    targetCompatibility = JavaVersion.VERSION_11
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+
+
+// This will set the repository for open source libraries.  mavenCentral is a common repository for Java code.
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Use TestNG framework, also requires calling test.useTestNG() below
+   testImplementation 'org.mockito:mockito-core:5.3.0'
+    testImplementation 'org.testng:testng:7.10.2'
+    // https://mvnrepository.com/artifact/org.slf4j/slf4j-simple
+    testImplementation 'org.slf4j:slf4j-simple:1.6.1'
+}
+
+tasks.named('test') {
+    // Use TestNG for unit tests.
+    useTestNG() {
+        includeGroups 'all', 'schilling', 'student'
+        excludeGroups
+        useDefaultListeners = true
+        outputDirectory = file("$projectDir/TestNG_Reports")
+    }
+    afterSuite { desc, result ->
+	if (!desc.parent) {
+		if (result.testCount == 0) {
+			throw new IllegalStateException("No tests were found. Failing the build")
+		}
+	}
+    }
+    maxHeapSize = '1G'
+    testLogging {
+        events "SKIPPED", "FAILED"
+    }
+    afterSuite { desc, result ->
+        if (!desc.parent) { // will match the outermost suite
+            def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+            def startItem = '|  ', endItem = '  |'
+            def repeatLength = startItem.length() + output.length() + endItem.length()
+            println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+        }
+    }
+    maxHeapSize = '1G'
+    testLogging {
+        exceptionFormat = 'full'
+    }
+	finalizedBy jacocoTestReport // report is always generated after tests run
+}
+
+jacoco {
+    toolVersion = "0.8.12"
+    reportsDirectory  = layout.buildDirectory.dir('customJacocoReportDir')
+}
+
+jacocoTestReport {
+    dependsOn test // tests are required to run before generating the report
+}
+
+jacocoTestReport {
+    reports {
+        xml.required = false
+        csv.required = false
+        html.outputLocation = layout.buildDirectory.dir('jacocoHtml')
+    }
+}
+
+check.dependsOn jacocoTestCoverageVerification
+
+jacocoTestCoverageVerification {
+  violationRules {
+    rule {
+	    enabled = true
+	    includes = [
+          'edu.msoe.swe2721.lab9.ConsoleCalculator'
+	    ]
+	
+        limit {
+          counter = 'BRANCH'
+          value = 'COVEREDRATIO'
+          minimum = 0.95
+        }
+    }
+	rule {
+	    enabled = true
+	    includes = [
+                'edu.msoe.swe2721.lab9.ConsoleCalculator'
+	    ]
+
+        limit {
+          counter = 'METHOD'
+          value = 'COVEREDRATIO'
+          minimum = 1.0
+        }
+    }
+  }
+}
+
+application {
+    mainClass = 'edu.msoe.swe2721.lab9.Main'
+}
+
+allprojects {
+    tasks.withType(Test) {
+        testLogging {
+            exceptionFormat "full"
+            showCauses true
+            showExceptions true
+            showStackTraces true
+            showStandardStreams true
+            events = ["skipped", "failed", "standardOut", "standardError"]
+        }
+    }
+}
+
+jar {
+    duplicatesStrategy(DuplicatesStrategy.EXCLUDE)
+   manifest {
+       attributes 'Main-Class': 'edu.msoe.swe2721.lab14.Main'
+   }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+}

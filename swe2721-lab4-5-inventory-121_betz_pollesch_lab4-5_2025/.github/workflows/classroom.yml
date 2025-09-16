@@ -1,0 +1,76 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Clean build
+      id: clean-build
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Clean build
+        setup-command: ''
+        command: gradle clean
+        timeout: 2
+        max-score: 1
+    - name: Run All Student Tests
+      id: run-all-student-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Run All Student Tests
+        setup-command: echo sed -i -e "s/includeGroups.*/includeGroups 'all'/g" build.gradle
+        command: gradle test
+        timeout: 2
+        max-score: 2
+    - name: Code Coverage Report (Students)
+      id: code-coverage-report-students
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Code Coverage Report (Students)
+        setup-command: sudo apt-get -y install w3m
+        command: 'gradle build jacocoTestReport; cd build; ls -l; cd jacocoHtml; w3m
+          -dump index.html; cd msoe.swe2721.lab4_5  ; w3m -dump CustomerManager.html;
+          w3m -dump InventoryManager.html; w3m -dump OrderManager.html; '
+        timeout: 2
+        max-score: 0
+    - name: Obtain Professor Tests
+      id: obtain-professor-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Obtain Professor Tests
+        setup-command: 'wget -q -O professorTests.zip -L https://msoe.box.com/shared/static/zyvbeyfbgtarxi5msaxo610y2tpsnxz1.zip;
+          unzip professorTests.zip; sed -i -e "s/includeGroups.*/includeGroups ''professor''/g"
+          build.gradle '
+        command: gradle test
+        timeout: 1
+        max-score: 8
+    - name: Professor Test Coverage
+      id: professor-test-coverage
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: Professor Test Coverage
+        setup-command: ''
+        command: 'gradle build jacocoTestReport; cd build; cd jacocoHtml; w3m -dump
+          index.html; cd msoe.swe2721.lab4_5  ; w3m -dump CustomerManager.html; w3m
+          -dump InventoryManager.html; w3m -dump OrderManager.html; '
+        timeout: 10
+        max-score: 0
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        CLEAN-BUILD_RESULTS: "${{steps.clean-build.outputs.result}}"
+        RUN-ALL-STUDENT-TESTS_RESULTS: "${{steps.run-all-student-tests.outputs.result}}"
+        CODE-COVERAGE-REPORT-STUDENTS_RESULTS: "${{steps.code-coverage-report-students.outputs.result}}"
+        OBTAIN-PROFESSOR-TESTS_RESULTS: "${{steps.obtain-professor-tests.outputs.result}}"
+        PROFESSOR-TEST-COVERAGE_RESULTS: "${{steps.professor-test-coverage.outputs.result}}"
+      with:
+        runners: clean-build,run-all-student-tests,code-coverage-report-students,obtain-professor-tests,professor-test-coverage

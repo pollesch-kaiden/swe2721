@@ -1,0 +1,103 @@
+name: Autograding Tests
+'on':
+- push
+- repository_dispatch
+permissions:
+  checks: write
+  actions: read
+  contents: read
+jobs:
+  run-autograding-tests:
+    runs-on: ubuntu-latest
+    if: github.actor != 'github-classroom[bot]'
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: 'Step 1: Clean Build of code'
+      id: step-1-clean-build-of-code
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Step 1: Clean Build of code'
+        setup-command: ''
+        command: gradle clean
+        timeout: 1
+        max-score: 1
+    - name: 'Step 2: Run all student tests'
+      id: step-2-run-all-student-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Step 2: Run all student tests'
+        setup-command: ''
+        command: gradle test
+        timeout: 2
+        max-score: 2
+    - name: 'Step 3: Generate Code Coverage Report'
+      id: step-3-generate-code-coverage-report
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Step 3: Generate Code Coverage Report'
+        setup-command: ''
+        command: gradle build jacocoTestReport
+        timeout: 2
+        max-score: 4
+    - name: 'Step 4: Display Code Coverage Report'
+      id: step-4-display-code-coverage-report
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Step 4: Display Code Coverage Report'
+        setup-command: sudo apt-get -y install w3m
+        command: cd build; ls -l; cd jacocoHtml; ls -l; w3m -dump index.html; cd edu.msoe.swe2721.taxRateCalculator;  w3m
+          -dump TaxCalculator2023.html
+        timeout: 2
+        max-score: 0
+    - name: 'Step 5: Obtain Professor Tests'
+      id: step-5-obtain-professor-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Step 5: Obtain Professor Tests'
+        setup-command: rm -Rf build
+        command: 'wget -q -O professorTests.zip -L https://msoe.box.com/shared/static/ri6wxqrz84rzjpbik9ufwmzs0ojyd6m0.zip; '
+        timeout: 2
+        max-score: 0
+    - name: 'Step 6: Run Professor Tests'
+      id: step-6-run-professor-tests
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Step 6: Run Professor Tests'
+        setup-command: 'unzip *.zip; gradle clean; sed -i -e "s/includeGroups.*/includeGroups
+          ''wschilling''/g" build.gradle '
+        command: gradle test
+        timeout: 2
+        max-score: 8
+    - name: 'Step 7: Generate Professor Coverage Report'
+      id: step-7-generate-professor-coverage-report
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Step 7: Generate Professor Coverage Report'
+        setup-command: ''
+        command: gradle build jacocoTestReport
+        timeout: 2
+        max-score: 16
+    - name: 'Step 8: Display Professor Coverage Report'
+      id: step-8-display-professor-coverage-report
+      uses: classroom-resources/autograding-command-grader@v1
+      with:
+        test-name: 'Step 8: Display Professor Coverage Report'
+        setup-command: ''
+        command: cd build; ls -l; cd jacocoHtml; ls -l; w3m -dump index.html; cd edu.msoe.swe2721.taxRateCalculator  ;
+          w3m -dump TaxCalculator2023.html;
+        timeout: 2
+        max-score: 0
+    - name: Autograding Reporter
+      uses: classroom-resources/autograding-grading-reporter@v1
+      env:
+        STEP-1-CLEAN-BUILD-OF-CODE_RESULTS: "${{steps.step-1-clean-build-of-code.outputs.result}}"
+        STEP-2-RUN-ALL-STUDENT-TESTS_RESULTS: "${{steps.step-2-run-all-student-tests.outputs.result}}"
+        STEP-3-GENERATE-CODE-COVERAGE-REPORT_RESULTS: "${{steps.step-3-generate-code-coverage-report.outputs.result}}"
+        STEP-4-DISPLAY-CODE-COVERAGE-REPORT_RESULTS: "${{steps.step-4-display-code-coverage-report.outputs.result}}"
+        STEP-5-OBTAIN-PROFESSOR-TESTS_RESULTS: "${{steps.step-5-obtain-professor-tests.outputs.result}}"
+        STEP-6-RUN-PROFESSOR-TESTS_RESULTS: "${{steps.step-6-run-professor-tests.outputs.result}}"
+        STEP-7-GENERATE-PROFESSOR-COVERAGE-REPORT_RESULTS: "${{steps.step-7-generate-professor-coverage-report.outputs.result}}"
+        STEP-8-DISPLAY-PROFESSOR-COVERAGE-REPORT_RESULTS: "${{steps.step-8-display-professor-coverage-report.outputs.result}}"
+      with:
+        runners: step-1-clean-build-of-code,step-2-run-all-student-tests,step-3-generate-code-coverage-report,step-4-display-code-coverage-report,step-5-obtain-professor-tests,step-6-run-professor-tests,step-7-generate-professor-coverage-report,step-8-display-professor-coverage-report

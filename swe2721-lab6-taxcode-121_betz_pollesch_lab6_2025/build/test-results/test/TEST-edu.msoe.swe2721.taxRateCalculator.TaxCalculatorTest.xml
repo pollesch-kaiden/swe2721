@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuite name="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" tests="10" skipped="0" failures="0" errors="0" timestamp="2025-03-11T22:06:52" hostname="AAD-PF4EEF8X" time="0.217">
+  <properties/>
+  <testcase name="testConstructorInvalidAge" classname="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" time="0.034"/>
+  <testcase name="testConstructorInvalidFilingStatus" classname="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" time="0.004"/>
+  <testcase name="testConstructorInvalidName" classname="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" time="0.003"/>
+  <testcase name="testInvalidAge" classname="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" time="0.004"/>
+  <testcase name="testMarriedFilingStatusRequiresSpouse" classname="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" time="0.004"/>
+  <testcase name="testMarriedJointlySetup[0](Larry, 30, Joan, 28, MARRIED_FILING_JOINTLY, 60000, 27700, true, 32300, 3436.0, 5.7)" classname="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" time="0.038"/>
+  <testcase name="testNameValidation" classname="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" time="0.012"/>
+  <testcase name="testSingleSetup[0](Beth, 33, SINGLE, 125000, 13850, true, 111150, 20076.0, 16.1)" classname="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" time="0.014"/>
+  <testcase name="testSingleSetup[1](Bart, 72, SINGLE, 15699, 15700, false, 0, 0, 0)" classname="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" time="0.0"/>
+  <testcase name="testStandardDeductionMarriedFilingJointly" classname="edu.msoe.swe2721.taxRateCalculator.TaxCalculatorTest" time="0.001"/>
+  <system-out><![CDATA[Start test
+Start test
+Start test
+Start test
+Start test
+Start test
+Start test
+Start test
+Start test
+Start test
+]]></system-out>
+  <system-err><![CDATA[]]></system-err>
+</testsuite>

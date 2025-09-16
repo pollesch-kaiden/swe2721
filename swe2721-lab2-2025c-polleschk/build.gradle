@@ -1,0 +1,82 @@
+plugins {
+    id 'application'
+}
+apply plugin : "java"
+
+version '1.0-SNAPSHOT'
+
+// This line will set the compiler version.  If a compatible compiler is not found, gradle will automatically download an appropriate and compatible version.
+java {
+    toolchain {
+        languageVersion = JavaLanguageVersion.of(21)
+    }
+}
+
+
+
+// This will set the repository for open source libraries.  mavenCentral is a common repository for Java code.
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    // Use TestNG framework, also requires calling test.useTestNG() below
+    testImplementation 'org.testng:testng:7.10.2'
+}
+
+tasks.named('test') {
+    // Use TestNG for unit tests.
+    useTestNG() {
+        includeGroups 'student', 'demo', 'all'
+        excludeGroups
+        useDefaultListeners = true
+        outputDirectory = file("$projectDir/TestNG_Reports")
+    }
+    testLogging {
+        events  "FAILED",
+                "SKIPPED",
+//                "STANDARD_OUT",
+                "STANDARD_ERROR"
+ //       exceptionFormat "FULL"
+//        showExceptions true
+//        showCauses true
+//        showStackTraces true
+
+        afterSuite { desc, result ->
+            if (!desc.parent) {
+                if (result.testCount == 0) {
+                    throw new IllegalStateException("No tests were found. Failing the build")
+                }
+            }
+        }
+        maxHeapSize = '1G'
+        afterSuite { desc, result ->
+            if (!desc.parent) { // will match the outermost suite
+                def output = "Results: ${result.resultType} (${result.testCount} tests, ${result.successfulTestCount} successes, ${result.failedTestCount} failures, ${result.skippedTestCount} skipped)"
+                def startItem = '|  ', endItem = '  |'
+                def repeatLength = startItem.length() + output.length() + endItem.length()
+                println('\n' + ('-' * repeatLength) + '\n' + startItem + output + endItem + '\n' + ('-' * repeatLength))
+            }
+        }
+        //reports.html.setDestination(file("$projectDir/GradleReports"))
+    }
+
+
+
+
+
+
+}
+private static void printResults(allResults) {
+    def maxLength = allResults*.readLines().flatten().collect { it.length() }.max()
+
+    println "+${"${"-" * maxLength}"}+"
+
+    println allResults.collect {
+        it.readLines().collect {
+            "¦" + it + " " * (maxLength - it.length()) + "¦"
+        }.join("\n")
+    }.join("\n+${"${"-" * maxLength}"}¦\n")
+
+    println "+${"${"-" * maxLength}"}+"
+}

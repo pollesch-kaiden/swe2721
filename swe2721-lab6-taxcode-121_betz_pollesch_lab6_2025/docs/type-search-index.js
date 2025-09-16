@@ -1,0 +1,1 @@
+typeSearchIndex = [{"l":"All Classes and Interfaces","u":"allclasses-index.html"},{"p":"edu.msoe.swe2721.taxRateCalculator","l":"FilingStatus"},{"p":"edu.msoe.swe2721.taxRateCalculator","l":"TaxCalculator2023"},{"p":"edu.msoe.swe2721.taxRateCalculator","l":"TaxCalculatorInterface"},{"p":"edu.msoe.swe2721.taxRateCalculator","l":"TaxFilingException"}];updateSearchResults();
